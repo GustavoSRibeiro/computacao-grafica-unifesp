@@ -35,17 +35,17 @@ function main(){
     canvas.addEventListener("mousedown",mouseClick,false);
     
     let points = [];
+    let changeMode = 0;
 
     function mouseClick(event){
-      if (points.length === 2)
+      if (points.length === 2 + changeMode)
         points = [];
 
       console.log(event.offsetX,event.offsetY);
       let x = (2/canvas.width * event.offsetX) - 1;
       let y = (-2/canvas.height * event.offsetY) + 1;
       points.push([x, y]);
-
-      bresenham(points[0], points[1]);
+      drawShapes();
     }
   
     const bodyElement = document.querySelector("body");
@@ -84,16 +84,59 @@ function main(){
         case "9":
           colorVector = [0.5,0.5,1.0];
           break;
+        case "r":
+        case "R":
+          gl.clear(gl.COLOR_BUFFER_BIT);
+          points = [];
+          changeMode = 0;
+          break;
+        case "t":
+        case "T":
+          gl.clear(gl.COLOR_BUFFER_BIT);
+          points = [];
+          changeMode = 1;
+          break;
       }
+      
+      drawShapes();
+    }
+    
+    function drawLine() {
+      if (points.length < 2) return;
+
+      gl.clear(gl.COLOR_BUFFER_BIT);
+
+      const [p1, p2] = points;
+      gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([...p1, ...p2]), gl.STATIC_DRAW);
+
+      gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([...colorVector, ...colorVector]), gl.STATIC_DRAW);
+
+      gl.drawArrays(gl.LINES, 0, 2);
+    }
+
+    function drawShapes(){
+      if(changeMode === 1) {
+        setTriangle(points);
+      }
+      else {
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        bresenham(points[0], points[1]);
+      }
+    }
+
+    function setTriangle(points) {
+      if (points.length < 3) return;
   
+      // Limpar a tela antes de desenhar uma nova linha
+      gl.clear(gl.COLOR_BUFFER_BIT);
       bresenham(points[0], points[1]);
+      bresenham(points[2], points[1]);
+      bresenham(points[2], points[0]);
     }
 
     function bresenham([x1, y1], [x2, y2]) {
-      if (points.length < 2) return;
-
-      // Limpar a tela antes de desenhar uma nova linha
-      gl.clear(gl.COLOR_BUFFER_BIT);
 
       // Converter para coordenadas de pixel
       x1 = Math.round(x1 * canvas.width / 2 + canvas.width / 2);
@@ -141,16 +184,13 @@ function main(){
           y += sy;
         }
       }
-    }
-
-    
+    }   
     
     function drawPoints(){
         gl.drawArrays(gl.POINTS, 0, 1);
     }
 
-    bresenham(points[0], points[1]);
-
+    drawShapes();
 }
   
 function createShader(gl, type, source) {

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>WebGL</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
+    <script src="main.js" defer></script>
+    <script id="vertex-shader-2d" type="notjs">
+      attribute vec2 position;
+      attribute vec3 color;
+      varying vec3 vcolor;
+      uniform float pointSize;
+      
+      void main() {
+        gl_Position = vec4(position, 0, 1);
+        vcolor = color;
+        gl_PointSize = pointSize;
+      }
+    </script>
+    <script id="fragment-shader-2d" type="notjs">
+      precision mediump float;
+      varying vec3 vcolor;
+
+      void main() {
+        gl_FragColor = vec4(vcolor, 1.0);
+      }
+    </script>
+</head>
+<body>
+  <h2 style="line-height: 1;">Atividade 02 exercício 03 - Traçar linhas e desenhar triângulos, alterar cor ou espessura</h2>
+  <h3 style="line-height: 0;">Digite "r" ou "R" para traçar linhas, digite "t" ou "T" para desenhar triângulos:</h3>
+  <h4 style="line-height: 0; color: blue;">MODO LINHAS: Clique em dois pontos na tela para traçar uma linha entre eles;</h4>
+  <h4 style="line-height: 0; color: green;">MODO TRIÂNGULOS: Clique em três pontos na tela para desenhar um triângulo entre eles;</h4>
+  <h4 style="line-height: 0; color: red;">Digite "k" ou "K" para entrar no modo cor e pressione um número de 0 a 9 para mudar a cor da linha/triângulo;</h4>
+  <h4 style="line-height: 0; color: purple;">Digite "e" ou "E" para entrar no modo espessura e pressione um número de 0 a 9 para mudar a espessura da linha/triângulo.</h4>
+  <canvas id="canvas" width="500" height="500"></canvas>
+</body>
+</html>
