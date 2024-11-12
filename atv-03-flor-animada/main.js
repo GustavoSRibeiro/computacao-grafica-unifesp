@@ -1,9 +1,9 @@
-function main(){
+function main() {
   const canvas = document.querySelector("#c");
   const gl = canvas.getContext('webgl');
 
   if (!gl) {
-      throw new Error('WebGL not supported');
+    throw new Error("WebGL not supported");
   }
 
   var vertexShaderSource = document.querySelector("#vertex-shader-2d").text;
@@ -30,52 +30,72 @@ function main(){
   gl.vertexAttribPointer(colorLocation, 3, gl.FLOAT, false, 0, 0);
 
   gl.clearColor(1.0, 1.0, 1.0, 1.0);
-  gl.clear(gl.COLOR_BUFFER_BIT);
-
-  // Desenha o vaso
-  const potColor = [0.8, 0.5, 0.2]; // Cor marrom para o vaso
-  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-  setRectangleVertices(gl, [-0.2, -0.9], [0.2, -0.9], [-0.3, -0.5], [0.3, -0.5]);
-  gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-  setRectangleColor(gl, potColor);
-  gl.drawArrays(gl.TRIANGLES, 0, 6);
-
-  // Caule
-  const green = [0.0, 1.0, 0.0];
-  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-  setRectangleVertices(gl, [-0.05, -0.5], [0.05, -0.5], [-0.05, 0.1], [0.05, 0.1]);
-  gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-  setRectangleColor(gl, green);
-  gl.drawArrays(gl.TRIANGLES, 0, 6);
 
   const n = 30;
-  const brown = [0.4, 0.2, 0.0];
   const center = [0.0, 0.3];
   const flowerRadius = 0.3;
   const petalCount = 8;
   const petalDistance = 0.4;
   const petalRadius = 0.15;
+  let angle = 0;
+  let potVerticalSpeed = 0.003; // Velocidade do vaso
+  let potPositionOffset = 0.0; // Offset vertical do vaso
 
-  // Pétalas da flor
-  for (let i = 0; i < petalCount; i++) {
-      const angle = i * (2 * Math.PI / petalCount);
+  function render() {
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    // Desenha o caule
+    const green = [0.0, 1.0, 0.0];
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    setRectangleVertices(gl, [-0.05, -0.5], [0.05, -0.5], [-0.05, 0.1], [0.05, 0.1]);
+    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+    setRectangleColor(gl, green);
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+    // Atualiza a posição do vaso para subir e descer
+    potPositionOffset += potVerticalSpeed;
+    if (potPositionOffset > 0.1 || potPositionOffset < -0.1) {
+      potVerticalSpeed = -potVerticalSpeed; // Inverte a direção do movimento
+    }
+
+    // Desenha o vaso com offset vertical
+    const potColor = [0.8, 0.5, 0.2];
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    setRectangleVertices(gl, [-0.2, -0.8 + potPositionOffset], [0.2, -0.8 + potPositionOffset], [-0.3, -0.4 + potPositionOffset], [0.3, -0.4 + potPositionOffset]);
+    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+    setRectangleColor(gl, potColor);
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+    
+
+    // Desenha as pétalas girando em torno do centro
+    angle += 0.02; // Incrementa o ângulo para a rotação
+    for (let i = 0; i < petalCount; i++) {
+      const baseAngle = i * (2 * Math.PI / petalCount);
       const petalCenter = [
-          center[0] + petalDistance * Math.cos(angle),
-          center[1] + petalDistance * Math.sin(angle)
+        center[0] + petalDistance * Math.cos(baseAngle + angle),
+        center[1] + petalDistance * Math.sin(baseAngle + angle)
       ];
 
       gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
       setCircleVertices(gl, n, petalRadius, petalCenter);
       gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-      setCircleColor(gl, n, [1.0, 1.0, 0.0]); // Cor das pétalas
+      setCircleColor(gl, n, [1.0, 1.0, 0.0]);
       gl.drawArrays(gl.TRIANGLES, 0, 3 * n);
+    }
+
+
+    // Desenha o centro da flor
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    setCircleVertices(gl, n, flowerRadius, center);
+    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+    setCircleColor(gl, n, [0.4, 0.2, 0.0]);
+    gl.drawArrays(gl.TRIANGLES, 0, 3 * n);
+
+    requestAnimationFrame(render); // Renderiza o próximo frame
   }
-  // Centro da flor
-  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-  setCircleVertices(gl, n, flowerRadius, center);
-  gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-  setCircleColor(gl, n, brown);
-  gl.drawArrays(gl.TRIANGLES, 0, 3 * n);
+
+  requestAnimationFrame(render);
 }
 
 
